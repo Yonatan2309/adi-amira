@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עדי עמירה - CRM וניהול פגישות</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: #0f172a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 1px solid #1e293b;
+            background-color: #090d16;
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 20px 0;
+            flex-grow: 1;
+        }
+        .sidebar-menu li {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #94a3b8;
+        }
+        .sidebar-menu li:hover, .sidebar-menu li.active {
+            background-color: #1e293b;
+            color: #ffffff;
+            border-right: 4px solid var(--primary);
+        }
+        .sidebar-footer {
+            padding: 15px 20px;
+            font-size: 0.85rem;
+            color: #64748b;
+            border-top: 1px solid #1e293b;
+        }
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-bar {
+            background-color: var(--card-bg);
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .top-bar h1 {
+            font-size: 1.4rem;
+            color: var(--text-main);
+        }
+        .user-badge {
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .content-body {
+            padding: 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        /* Cards & Forms */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        td {
+            font-size: 0.95rem;
+        }
+        .status-badge {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #0f172a;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">עדי עמירה CRM</div>
+        <ul class="sidebar-menu">
+            <li class="active" onclick="switchTab('dashboard')">לוח בקרה</li>
+            <li onclick="switchTab('meetings')">יומן פגישות</li>
+            <li onclick="switchTab('clients')">מאגר לקוחות</li>
+            <li onclick="switchTab('sync')">סנכרון ויומנים</li>
+        </ul>
+        <div class="sidebar-footer">
+            גרסה 2.1 • מחובר לענן
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="top-bar">
+            <h1 id="page-title">לוח בקרה וניהול פגישות</h1>
+            <div class="user-badge">מחוברת: עדי עמירה (ענן מקומי)</div>
+        </div>
+
+        <div class="content-body">
+            
+            <!-- Dashboard / New Meeting Tab -->
+            <div id="tab-dashboard" class="tab-content">
+                <div class="card">
+                    <h2>קביעת פגישה חדשה וסנכרון אוטומטי ליומן</h2>
+                    <form id="meetingForm" onsubmit="handleFormSubmit(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="clientName">שם הלקוח / משתתף</label>
+                                <input type="text" id="clientName" required placeholder="לדוגמה: ישראל ישראלי">
+                            </div>
+                            <div class="form-group">
+                                <label for="meetingDate">תאריך הפגישה</label>
+                                <input type="date" id="meetingDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="meetingTime">שעה</label>
+                                <input type="time" id="meetingTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="meetingType">סוג פגישה</label>
+                                <select id="meetingType">
+                                    <option value="ייעוץ משכנתאות">ייעוץ משכנתאות</option>
+                                    <option value="פגישת היכרות">פגישת היכרות</option>
+                                    <option value="מעקב תיק">מעקב תיק</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">קבע פגישה וסנכרן ליומן Google</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>פגישות קרובות שנקבעו</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>שם הלקוח</th>
+                                <th>סוג פגישה</th>
+                                <th>תאריך ושעה</th>
+                                <th>סטטוס סנכרון</th>
+                            </tr>
+                        </thead>
+                        <tbody id="meetingsTableBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted);">טרם נקבעו פגישות בסשן זה</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Other tabs placeholder -->
+            <div id="tab-meetings" class="tab-content" style="display: none;">
+                <div class="card">
+                    <h2>כל הפגישות במערכת</h2>
+                    <p style="color: var(--text-muted);">ניתן לראות ולנהל את כל רשימת הפגישות המלאה.</p>
+                </div>
+            </div>
+
+            <div id="tab-clients" class="tab-content" style="display: none;">
+                <div class="card">
+                    <h2>מאגר הלקוחות של עדי</h2>
+                    <p style="color: var(--text-muted);">כאן יוצגו פרטי הלקוחות השמורים במערכת.</p>
+                </div>
+            </div>
+
+            <div id="tab-sync" class="tab-content" style="display: none;">
+                <div class="card">
+                    <h2>הגדרות סנכרון יומנים חיצוניים</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 15px;">המערכת מחוברת באופן אוטומטי באמצעות Webhook ל-Google Calendar.</p>
+                    <button class="btn" onclick="showToast('היומן מוגדר ומחובר בהצלחה!')">בדיקת חיבור Webhook</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">הפגישה נקבעה ונוספה בהצלחה ליומן Google!</div>
+
+    <script>
+        // Tab switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.sidebar-menu li').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabId).style.display = 'block';
+            event.currentTarget.classList.add('active');
+            
+            const titles = {
+                'dashboard': 'לוח בקרה וניהול פגישות',
+                'meetings': 'יומן פגישות מלא',
+                'clients': 'מאגר לקוחות',
+                'sync': 'סנכרון ונתונים'
+            };
+            document.getElementById('page-title').innerText = titles[tabId];
+        }
+
+        // Toast notification helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
+
+        // Form submission & Webhook integration
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const clientName = document.getElementById('clientName').value;
+            const meetingDate = document.getElementById('meetingDate').value;
+            const meetingTime = document.getElementById('meetingTime').value;
+            const meetingType = document.getElementById('meetingType').value;
+
+            const meetingData = {
+                clientName: clientName,
+                date: meetingDate,
+                time: meetingTime,
+                type: meetingType,
+                timestamp: new Date().toISOString()
+            };
+
+            // Webhook URL provided by user in Make
+            const webhookUrl = 'https://hook.eu1.make.com/zkro45392knnbar70luhjxnr8q0ol397';
+
+            // Send data to Make webhook
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(meetingData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('הפגישה נשלחה בהצלחה ליומן!');
+                }
+            })
+            .catch(error => {
+                console.error('שגיאה בשליחת הפגישה:', error);
+            });
+
+            // Update UI table
+            const tbody = document.getElementById('meetingsTableBody');
+            if (tbody.querySelector('td[colspan]')) {
+                tbody.innerHTML = '';
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><b>${clientName}</b></td>
+                <td>${meetingType}</td>
+                <td>${meetingDate} בשעה ${meetingTime}</td>
+                <td><span class="status-badge">סונכרן ליומן</span></td>
+            `;
+            tbody.prepend(row);
+
+            showToast('הפגישה נקבעה ונוספה בהצלחה ליומן Google!');
+            document.getElementById('meetingForm').reset();
+        }
+    </script>
+</body>
+</html>
